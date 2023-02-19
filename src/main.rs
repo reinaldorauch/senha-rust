@@ -14,6 +14,8 @@ use std::default::Default;
 use std::sync::Arc;
 use uuid::Uuid;
 
+pub mod cors;
+
 #[macro_use]
 extern crate rocket;
 
@@ -64,7 +66,6 @@ async fn list_sessions<'a>(s: &State<Session>) -> Json<ListSessionsResponse> {
 }
 
 #[derive(Deserialize)]
-#[serde(crate = "rocket::serde")]
 struct CreateSessionData<'s> {
     name: Cow<'s, str>,
 }
@@ -166,6 +167,7 @@ fn rocket() -> _ {
     rocket::build()
         .manage(Session::default())
         .manage(channel::<SessionEvent>(1024).0)
+        .attach(cors::CORS)
         .mount(
             "/",
             routes![
